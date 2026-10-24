@@ -29,12 +29,14 @@ Entregas finais: notebook, README (com licencas), relatorio 6-10 paginas, plano 
 | Etapa | Estado |
 |---|---|
 | 0 Plano | Aprovado (abordagem hibrida: Roboflow para treino, SoccerNet GSR para avaliacao) |
-| 1 Deteccao | Codigo + testes prontos (10 passam). **Treino/avaliacao ainda NAO executados** |
-| 2-5 | Nao iniciadas |
+| 1 Deteccao | **Concluida**. Treino 50 epocas na RTX 3060. Test mAP50=83.2%, mAP50-95=61.4% (player 98.9%, referee 96.0%, gk 94.3%, ball 43.8%). Ablacao da bola: sem slicing 30.3 FPS (51.0% bruto / 65.3% pos) vs com slicing 4.0 FPS (51.7% bruto / 65.3% pos). |
+| 2 Tracking | **Concluida**. ByteTrack via Ultralytics (jogadores/goleiros/arbitros com bola isolada). IDs estaveis (26 IDs unicos em 150 frames do video de teste). Demo anotado em `runs/tracking_demo.mp4`. 15 testes unitarios passam. |
+| 3 Times | **Concluida**. Extracao de torso, KMeans k=2, voto temporal por track_id, goleiro por centroide espacial, arbitro por classe. Ablacao 2: HSV (1495 FPS, Silh=0.5436, DB=0.7639) vs SigLIP (39.4 FPS, Silh=0.4497, DB=0.9347). Demo anotado em `runs/teams_demo.mp4`. 21 testes passam. |
+| 4 Homografia | **Concluida e Corrigida**. Keypoints do campo (32 marcos canônicos), `imgsz=640` nativo, `cv2.findHomography` + RANSAC (campo 105x68 m), suavização temporal EMA (alpha=0.15) e fallback (max 30 frames). Alinhamento milimétrico do círculo central e meio de campo (14/14 inliers). Demo em `runs/homography_demo.mp4`. 26 testes passam. |
+| 5 Minimapa/Metricas | **Concluida**. Minimapa 2D com proporções FIFA e marcações completas, métricas físicas (velocidade instantânea em km/h com filtro > 40 km/h, distância percorrida por track ID), posse de bola tática espacial (raio <= 2.0m). Pipeline integrado de ponta a ponta gerando `runs/full_tactical_analysis.mp4` e `runs/tactical_metrics.json`. 32 testes passam. |
 
-**Pendencias da Etapa 1:** treinar na GPU (RTX 3060 12 GB), rodar `evaluate detector`, anotar GT da bola
-(CSV `frame,x,y`, ~100-300 frames) e rodar a ablacao `evaluate ball` (com/sem slicing). So depois seguir para a Etapa 2.
-O smoke test de 1 epoca em CPU nao foi concluido (servidor reiniciou); na GPU rodar de novo.
+**Pesos treinados:** `runs/detector/weights/best.pt` (e `runs/smoke/weights/best.pt`).
+**Decisao da Etapa 1:** Inferência direta em alta resolução (sem slicing) preserva tempo real (>30 FPS) e o pós-processamento temporal eleva a cobertura da bola para 65.3%.
 
 ## Estrutura
 ```
@@ -91,7 +93,9 @@ python -m scripts.evaluate ball --weights runs/detector/weights/best.pt --video 
   sem `--global`; a global e a corporativa).
 - Nunca commitar: `data/`, `runs/`, `weights/`, `*.pt`, `*.mp4`, `.env`, chaves de API.
 
-## Proximos passos
-1. Treinar e avaliar o detector na GPU; reportar mAP50, mAP50-95 e P/R por classe.
-2. Anotar GT da bola e rodar a ablacao (com/sem slicing + pos-processamento) reportando FPS.
-3. Com aprovacao do usuario, iniciar a Etapa 2 (tracking).
+## Estado das Entregas Finais
+- [x] **Relatório Técnico Final**: Concluído em `docs/RELATORIO_TECNICO.md` (6-10 páginas equivalentes, ~3000 palavras, metodologia, arquitetura e as 3 ablações detalhadas com tabelas e fórmulas).
+- [x] **Jupyter Notebook Interativo**: Concluído em `notebooks/pipeline_demonstracao.ipynb` (passo a passo didático das 5 etapas).
+- [x] **README.md e LICENSE**: Concluídos na raiz com documentação detalhada de ambiente, instalação, comandos reprodutíveis, tabelas de ablações e licenças completas (MIT, CC BY 4.0, AGPL-3.0, Apache-2.0).
+- [x] **Suíte de Testes**: 32 testes unitários passando (`pytest`).
+

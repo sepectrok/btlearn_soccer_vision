@@ -33,3 +33,44 @@ ball:
   max_jump_px: 150           # salto maximo plausivel entre frames consecutivos
   max_gap_frames: 10         # maior buraco interpolado
   smooth_window: 5           # janela da mediana movel
+
+tracking:
+  tracker_type: bytetrack.yaml                   # tracker nativo do Ultralytics
+  track_classes: [goalkeeper, player, referee]   # bola tratada separadamente pelo BallDetector
+  conf: 0.25
+  iou: 0.5
+  imgsz: 1280
+  track_buffer: 30                               # frames que mantém um track perdido antes de descartar
+  match_thresh: 0.8                              # limiar de associação IoU
+
+teams:
+  method: siglip                                 # "siglip" (embeddings) ou "hsv" (baseline)
+  model_name: google/siglip-base-patch16-224     # backbone de visão
+  dim_reduction: pca                             # "pca", "umap" ou "none"
+  pca_components: 16
+  k: 2                                           # dois times de linha
+  min_crop_size: [10, 10]                        # tamanho minimo do torso para aceitar
+  grass_filter: true                             # filtrar pixels de grama no HSV
+
+homography:
+  model_repo: martinjolif/yolo-football-pitch-detection
+  model_filename: yolo-football-pitch-detection.pt
+  pitch_length: 105.0                            # metros (comprimento padrao FIFA)
+  pitch_width: 68.0                              # metros (largura padrao FIFA)
+  conf_threshold: 0.35                           # confianca minima de keypoint
+  ransac_threshold: 6.0                          # limiar de reprojecao do RANSAC em pixels
+  min_keypoints: 4                               # minimo de pontos nao colineares
+  smooth_alpha: 0.15                             # taxa de suavizacao temporal exponencial (EMA)
+  max_fallback_frames: 30                        # maximo de frames em fallback reusando ultima H valida
+  imgsz: 640                                     # resolucao nativa de treino do modelo de keypoints
+
+metrics:
+  max_speed_kmh: 40.0                            # limiar fisico para descartar saltos irreais de velocidade
+  speed_smooth_window: 5                         # janela de suavizacao da velocidade em frames
+  possession_radius_m: 2.0                       # raio de proximidade para atribuir posse de bola (metros)
+  minimap:
+    width: 350                                   # largura do minimapa em pixels
+    height: 227                                  # altura do minimapa em pixels
+    alpha: 0.85                                  # transparencia do fundo
+    margin: 20                                   # margem da borda do frame
+    position: top_right                          # posicao no video
