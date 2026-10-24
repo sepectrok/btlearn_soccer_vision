@@ -1,0 +1,12 @@
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+data/
+runs/
+outputs/
+weights/
+*.pt
+*.mp4
+.ipynb_checkpoints/
+.env

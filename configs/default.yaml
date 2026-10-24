@@ -1,0 +1,35 @@
+project:
+  seed: 42
+
+paths:
+  data_dir: data
+  dataset_dir: data/roboflow_players   # onde o dataset YOLO e extraido
+  runs_dir: runs
+  weights_dir: weights
+
+detection:
+  # Ordem EXATA das classes esperada pelo projeto. O validador compara com o data.yaml baixado.
+  classes: [ball, goalkeeper, player, referee]
+  base_weights: yolov8s.pt        # pre-treinado em COCO (verificar nome na doc Ultralytics)
+  train:
+    epochs: 50
+    imgsz: 960
+    batch: 8
+    patience: 15
+    lr0: 0.001
+    optimizer: AdamW
+    workers: 2
+  infer:
+    conf: 0.25
+    iou: 0.5
+    imgsz: 1280
+
+ball:
+  conf: 0.10                 # a bola e pequena: limiar baixo + escolha da melhor deteccao
+  slicing:
+    enabled: true
+    slice_wh: [640, 640]
+    overlap: 0.2
+  max_jump_px: 150           # salto maximo plausivel entre frames consecutivos
+  max_gap_frames: 10         # maior buraco interpolado
+  smooth_window: 5           # janela da mediana movel
