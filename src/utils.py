@@ -39,6 +39,36 @@ def resolve(path: str | Path) -> Path:
     return p if p.is_absolute() else PROJECT_ROOT / p
 
 
+# Locais candidatos para os pesos do detector (ordem de prioridade apos o caminho explicito).
+DETECTOR_WEIGHT_CANDIDATES = (
+    "weights/detector_best.pt",
+    "runs/detector/weights/best.pt",
+)
+
+
+def resolve_detector_weights(path: str | Path | None = None) -> Path:
+    """Encontra os pesos do detector YOLO treinado.
+
+    Tenta ``path`` (se dado) e depois os locais em ``DETECTOR_WEIGHT_CANDIDATES``.
+
+    Raises:
+        FileNotFoundError: com instrucoes de como obter/gerar os pesos.
+    """
+    tried: list[Path] = []
+    candidates = ([path] if path else []) + list(DETECTOR_WEIGHT_CANDIDATES)
+    for c in candidates:
+        p = resolve(c)
+        tried.append(p)
+        if p.exists():
+            return p
+    raise FileNotFoundError(
+        "Pesos do detector nao encontrados. Locais testados:\n  "
+        + "\n  ".join(str(t) for t in tried)
+        + "\nColoque o arquivo em weights/detector_best.pt ou treine com "
+        "`python -m scripts.train_detector --name detector` (veja README, secao 'Avaliacao')."
+    )
+
+
 def set_seed(seed: int) -> None:
     """Fixa seeds de random/numpy/torch (torch e opcional na importacao)."""
     random.seed(seed)

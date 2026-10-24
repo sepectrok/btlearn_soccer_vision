@@ -4,7 +4,7 @@
 [![PyTorch CUDA](https://img.shields.io/badge/PyTorch-CUDA%20Enabled-orange.svg)](https://pytorch.org/)
 [![Ultralytics YOLOv8](https://img.shields.io/badge/YOLOv8-Object%20Detection-green.svg)](https://github.com/ultralytics/ultralytics)
 [![ByteTrack](https://img.shields.io/badge/Tracker-ByteTrack-red.svg)](https://github.com/ifzhang/ByteTrack)
-[![Tests](https://img.shields.io/badge/Tests-32%20Passed-brightgreen.svg)](#testes-unitários)
+[![Tests](https://img.shields.io/badge/Tests-35%20Passed-brightgreen.svg)](#testes-unitários)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 Pipeline de visão computacional ponta a ponta para análise tática e rastreamento de futebol a partir de transmissões monológicas em vídeo de alta definição (*broadcast*). O sistema detecta atores e bola, rastreia identidades estáveis, classifica uniformes de equipes, calcula a homografia planar para o campo regulamentar FIFA (105x68 m), estima velocidades e distâncias físicas e renderiza um minimapa 2D tipo radar em tempo de execução.
@@ -92,13 +92,31 @@ python -c "import torch; print('CUDA disponível:', torch.cuda.is_available())"
 
 ---
 
+## ✅ Avaliação Rápida (para o professor / IA avaliadora)
+
+Após instalar o ambiente (seção acima), **um único comando** valida o trabalho de ponta a ponta:
+
+```powershell
+python -m scripts.setup_assets     # baixa vídeo de teste + modelo de campo; confere os pesos do detector
+python -m scripts.verify           # pytest + pipeline completo (30 frames) + validação das saídas
+```
+
+- `scripts.verify` retorna código de saída `0` (aprovado) ou `1` (reprovado) e grava `runs/verify_report.json`.
+- Saídas geradas: `runs/verify_output.mp4` (vídeo tático) e `runs/verify_metrics.json` (métricas).
+- Para a execução completa (150 frames): `python -m scripts.run_pipeline` (sem argumentos).
+- Funciona em CPU (lento, ~1-3 FPS) ou GPU CUDA. Na primeira execução baixa modelos da internet (Hugging Face; SigLIP ~400 MB, pois `teams.method: siglip` no config; troque por `hsv` para evitar).
+- **Pesos do detector:** esperados em `weights/detector_best.pt` (versionado no repositório) ou `runs/detector/weights/best.pt` (gerado por `python -m scripts.train_detector --name detector`, que exige o dataset Roboflow e `ROBOFLOW_API_KEY`).
+- Os testes unitários (`python -m pytest -q`, 35 testes) **não** exigem GPU, pesos nem internet.
+
+---
+
 ## 🚀 Como Executar
 
 ### 1. Testes Unitários
 Execute a suíte completa de testes automatizados:
 ```powershell
 python -m pytest -q
-# Resultado esperado: 32 passed
+# Resultado esperado: 35 passed
 ```
 
 ### 2. Download do Dataset de Treino (Opcional)
@@ -161,7 +179,9 @@ scripts/
   classify_teams.py         # Classificação e ablação de uniformes
   evaluate_homography.py    # Avaliação e ablação de homografia
   run_pipeline.py           # Pipeline integrado ponta a ponta
-tests/                      # 32 testes unitários (pytest)
+  setup_assets.py           # Baixa/valida vídeo, modelo de campo e pesos
+  verify.py                 # Verificação única para avaliação (testes + pipeline + saídas)
+tests/                      # 35 testes unitários (pytest)
 docs/
   RELATORIO_TECNICO.md      # Relatório técnico completo de 6 a 10 páginas
 notebooks/

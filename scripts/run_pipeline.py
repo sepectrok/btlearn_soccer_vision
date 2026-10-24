@@ -33,7 +33,14 @@ from src.metrics.possession import BallPossessionTracker
 from src.metrics.speed_distance import PhysicalMetricsTracker
 from src.teams.classifier import TeamClassifier, TeamVotingManager
 from src.tracking.tracker import PlayerTracker, TrackedPlayer, draw_ball
-from src.utils import get_logger, iter_frames, load_config, resolve
+from src.utils import (
+    get_logger,
+    iter_frames,
+    load_config,
+    resolve,
+    resolve_detector_weights,
+    set_seed,
+)
 
 log = get_logger("run_pipeline")
 
@@ -59,7 +66,8 @@ def fit_team_classifier(
 
     if len(crops) < 10:
         log.warning("Poucas amostras de torso (%d); usando inicializacao sintetica padrao.", len(crops))
-        dummy = [np.random.randint(0, 255, (30, 20, 3), dtype=np.uint8) for _ in range(10)]
+        rng = np.random.default_rng(42)
+        dummy = [rng.integers(0, 255, (30, 20, 3), dtype=np.uint8) for _ in range(10)]
         clf.fit(dummy)
     else:
         log.info("Ajustando classificador KMeans com %d amostras de torso...", len(crops))
@@ -107,23 +115,26 @@ def main() -> int:
     ap = argparse.ArgumentParser(description="Executa o pipeline tático completo de futebol.")
     ap.add_argument("--config", default="configs/default.yaml")
     ap.add_argument("--video", default="data/121364_0.mp4")
-    ap.add_argument("--weights-detector", default="runs/detector/weights/best.pt")
+    ap.add_argument("--weights-detector", default=None,
+                    help="Pesos do detector (padrao: weights/detector_best.pt ou runs/detector/weights/best.pt).")
     ap.add_argument("--output", default="runs/full_tactical_analysis.mp4")
     ap.add_argument("--metrics-output", default="runs/tactical_metrics.json")
     ap.add_argument("--max-frames", type=int, default=150)
     a = ap.parse_args()
 
     cfg = load_config(a.config)
+    set_seed(cfg.get("project", {}).get("seed", 42))
     video_path = resolve(a.video)
-    det_weights = resolve(a.weights_detector)
+    try:
+        det_weights = resolve_detector_weights(a.weights_detector)
+    except FileNotFoundError as exc:
+        log.error("%s", exc)
+        return 1
     output_path = resolve(a.output)
     metrics_path = resolve(a.metrics_output)
 
     if not video_path.exists():
         log.error("Vídeo não encontrado: %s", video_path)
-        return 1
-    if not det_weights.exists():
-        log.error("Pesos do detector não encontrados: %s", det_weights)
         return 1
 
     # Inicialização dos módulos

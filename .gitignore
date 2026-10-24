@@ -10,3 +10,7 @@ weights/
 *.mp4
 .ipynb_checkpoints/
 .env
+
+# excecao: pesos finais do detector entregues no repositorio (para avaliacao)
+!weights/
+!weights/detector_best.pt

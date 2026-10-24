@@ -97,5 +97,6 @@ python -m scripts.evaluate ball --weights runs/detector/weights/best.pt --video 
 - [x] **Relatório Técnico Final**: Concluído em `docs/RELATORIO_TECNICO.md` (6-10 páginas equivalentes, ~3000 palavras, metodologia, arquitetura e as 3 ablações detalhadas com tabelas e fórmulas).
 - [x] **Jupyter Notebook Interativo**: Concluído em `notebooks/pipeline_demonstracao.ipynb` (passo a passo didático das 5 etapas).
 - [x] **README.md e LICENSE**: Concluídos na raiz com documentação detalhada de ambiente, instalação, comandos reprodutíveis, tabelas de ablações e licenças completas (MIT, CC BY 4.0, AGPL-3.0, Apache-2.0).
-- [x] **Suíte de Testes**: 32 testes unitários passando (`pytest`).
+- [x] **Suíte de Testes**: 35 testes unitários passando (`pytest`).
+- [x] **Avaliação pelo professor**: `python -m scripts.setup_assets` + `python -m scripts.verify` (pytest + pipeline 30 frames + validação das saídas; relatório em `runs/verify_report.json`). Pesos versionados em `weights/detector_best.pt` (exceção no .gitignore). Verificado em CPU: 0.3 FPS, APROVADO.
 
